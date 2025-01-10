@@ -106,27 +106,30 @@ class Extractor(ABC):
             if scroll_count == max_scroll:
                 print("❌ 최대 시도 횟수 도달, 종료합니다.")
 
-        _, _, _, _, profile_ratio = self.get_dynamic_ratio(hwnd)
-        cropped_image = first_screenshot_bin[:, int(client_width * profile_ratio):]
+        if parent:
+            parent.activateWindow()  # 윈도우 활성화
+            parent.raise_()  # 윈도우를 맨 위로 올림
 
         # resized_image = cv2.resize(cropped_image, (0, 0), fx=0.4, fy=0.4)
-
-        # if parent:
-        #     parent.activateWindow()  # 윈도우 활성화
-        #     parent.raise_()  # 윈도우를 맨 위로 올림
         # cv2.imshow("Preview", resized_image)
+        #
+        # cv2.waitKey(0)
         #
         # cv2.destroyAllWindows()
 
-        directory = self.create_output_directory()
         self._on_before_extract()
 
+        _, _, _, _, profile_ratio = self.get_dynamic_ratio(hwnd)
+        cropped_image = first_screenshot_bin[:, int(client_width * profile_ratio):]
         extracted_text = clova_ocr.call_clova_ocr(cropped_image, api_url, api_secret_key)
         print(f"📝 추출된 텍스트: {extracted_text}")
+
+        extracted_text = self._fix_extracted_text(extracted_text)
 
         self._on_after_extract(extracted_text)
 
         # 엑셀 저장
+        directory = self.create_output_directory()
         today = datetime.now().strftime('%Y-%m-%d')
         title = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         excel_path = os.path.join(directory, f"{today}.xlsx");
@@ -147,7 +150,10 @@ class Extractor(ABC):
         if window.show_message("추출", "추출이 완료되었습니다. 엑셀파일을 실행하시겠습니까?", True):
             os.startfile(excel_path)
 
-    def _create_excel_data(self, extracted_text=None, other_details: dict = None):
+    def _fix_extracted_text(self, extracted_text):
+        return extracted_text
+
+    def _create_excel_data(self, extracted_text=None):
         headers = [excel_header.header for excel_header in self.excel_columns]
 
         ocr_data = self._split_extracted_text(extracted_text)

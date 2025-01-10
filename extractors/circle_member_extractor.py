@@ -79,12 +79,6 @@ class CircleMemberExtractor(Extractor):
                 style_handler=self._cell_style_handler
             ),
             ExcelColumn(
-                key="missing_total_contrib",
-                header="부족 누적 공헌도",
-                value=self.calculate_missing_total_contrib,
-                style_handler=self._cell_style_handler
-            ),
-            ExcelColumn(
                 key="status",
                 header="상태",
                 value=lambda data: data["status"],
@@ -100,19 +94,45 @@ class CircleMemberExtractor(Extractor):
 
         super().__init__(ocr_headers=ocr_headers, excel_columns=excel_columns)
 
+    def _fix_extracted_text(self, extracted_text):
+        is_fix_needed = len(extracted_text) % len(self.ocr_headers)
+        if is_fix_needed == 0:
+            return extracted_text
+
+        header_size = len(self.ocr_headers)
+        max_size = (len(extracted_text) // header_size) * header_size
+        for i in range(0, max_size, header_size):
+            # 직위
+            if not extracted_text[i + 1] in ["서클장", "서클원", "부서클장"]:
+                extracted_text[i] += extracted_text[i + 1]
+                del extracted_text[i + 1]
+
+            # 주간 공헌도
+            if not extracted_text[i + 2].isdigit():
+                extracted_text[i + 1] += extracted_text[i + 2]
+                del extracted_text[i + 2]
+
+            # # 누적 공헌도
+            # if not extracted_text[i + 3].isdigit():
+            #     pass
+
+            # # 상태
+            # if not extracted_text[i + 4] == "오늘" and not extracted_text[i + 4].endswith("전"):
+            #     pass
+
+            # 레벨
+            if not extracted_text[i + 5].startswith("Lv"):
+                extracted_text[i + 4] += extracted_text[i + 5]
+                del extracted_text[i + 5]
+
+        return extracted_text
+
     def calculate_missing_weekly_contrib(self, data):
         circle_member_manager = CircleMemberManager()
         join_date = circle_member_manager.get_by_nickname(data["nickname"], "join_date")
 
         if join_date:
             return self.calculate_weekly_contrib_goal(join_date) - int(data["weekly_contrib"])
-
-    def calculate_missing_total_contrib(self, data):
-        circle_member_manager = CircleMemberManager()
-        join_date = circle_member_manager.get_by_nickname(data["nickname"], "join_date")
-
-        if join_date:
-            return self.calculate_total_contrib_goal(join_date) - int(data["total_contrib"])
 
     def calculate_weekly_contrib_goal(self, join_date):
         if join_date is None:
@@ -128,13 +148,13 @@ class CircleMemberExtractor(Extractor):
         # join_date를 datetime 객체로 변환
         join_date = datetime.strptime(join_date, '%Y-%m-%d')
 
-        # 이번 주와 저번 주 구분
+        # 이번 주 가입은 구분
         weekday = today.weekday()
         if join_date > today - timedelta(days=weekday):  # 이번 주에 가입한 경우
-            days_since_join = (today - join_date).days
-        else:  # 저번 주에 가입한 경우
+            days_since_join = (today - join_date).days + 1
+        else:
             monday = today - timedelta(days=weekday)
-            days_since_join = (today - monday).days
+            days_since_join = (today - monday).days + 1
 
         return MAX_DAILY_CONTRIB * days_since_join
 
@@ -168,7 +188,7 @@ class CircleMemberExtractor(Extractor):
         config = ConfigManager()
         # contrib_idx = next(
         #     (idx for idx, column in enumerate(self.excel_columns) if column.key == "missing_weekly_contrib"), None)
-        if row_data["weekly_contrib"] is not None and row_data["weekly_contrib"] >= config.get("contrib_limit"):
+        if row_data["missing_weekly_contrib"] is not None and row_data["missing_weekly_contrib"] >= config.get("contrib_limit"):
             cell.fill = PatternFill(start_color="FFDFDF", end_color="FFDFDF", fill_type="solid")  # 배경색
 
     def get_dynamic_ratio(self, hwnd=None):
