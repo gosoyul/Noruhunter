@@ -4,8 +4,6 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Callable
 
-import cv2
-
 from config import ConfigManager, ConfigKeys
 from excel import Excel, ExcelColumn
 from utils import clova_ocr, window, image, mouse
@@ -130,16 +128,22 @@ class Extractor(ABC):
 
         # 엑셀 저장
         directory = self.create_output_directory()
-        today = datetime.now().strftime('%Y-%m-%d')
-        title = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        excel_path = os.path.join(directory, f"{today}.xlsx");
 
+        today = datetime.now()
+        today_date = today.strftime('%Y-%m-%d')
+        today_time = today.strftime('%H:%M:%S')
+
+        # 요일을 한국어로 매핑
+        weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
+        weekday = weekdays[today.weekday()]
+
+        excel_path = os.path.join(directory, f"{today_date}.xlsx")
         headers, data = self._create_excel_data(extracted_text)
 
         excel = Excel()
         excel.export(path=excel_path,
-                     sheet_name=today,
-                     title=title,
+                     sheet_name=today_date,
+                     title=f"{today_date} {today_time} {weekday}",
                      columns=self.excel_columns,
                      data=data)
 

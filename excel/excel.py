@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 from openpyxl.reader.excel import load_workbook
-from openpyxl.styles import Font, Alignment
+from openpyxl.styles import Font, Alignment, Border, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo
@@ -63,7 +63,38 @@ class Excel:
             new_ws = new_wb.create_sheet(title=sheet_name)
 
             for row in old_ws.iter_rows():
-                new_ws.append([cell.value for cell in row])  # 모든 행 데이터 복사
+                for cell in row:
+                    new_ws[cell.coordinate].value = cell.value
+                    # 셀 스타일도 복사합니다.
+                    new_cell = new_ws[cell.coordinate]
+
+                    # 스타일 속성 복사
+                    new_cell.font = Font(name=cell.font.name, size=cell.font.size, bold=cell.font.bold,
+                                         italic=cell.font.italic, color=cell.font.color)
+                    new_cell.alignment = Alignment(horizontal=cell.alignment.horizontal,
+                                                   vertical=cell.alignment.vertical)
+                    new_cell.border = Border(left=cell.border.left, right=cell.border.right, top=cell.border.top,
+                                             bottom=cell.border.bottom)
+                    new_cell.fill = PatternFill(fill_type=cell.fill.fill_type, fgColor=cell.fill.fgColor)
+                    new_cell.number_format = cell.number_format
+
+            # 셀 병합 정보 복사
+            for merged_range in old_ws.merged_cells.ranges:
+                new_ws.merge_cells(str(merged_range))
+
+            # 테이블 복사
+            for table in old_ws.tables.values():
+                new_table = Table(displayName=table.displayName, ref=table.ref)
+
+                # 테이블 스타일 복사
+                new_table.tableStyleInfo = TableStyleInfo(
+                    name=table.tableStyleInfo.name,
+                    showFirstColumn=table.tableStyleInfo.showFirstColumn,
+                    showLastColumn=table.tableStyleInfo.showLastColumn,
+                    showRowStripes=table.tableStyleInfo.showRowStripes,
+                    showColumnStripes=table.tableStyleInfo.showColumnStripes
+                )
+                new_ws.add_table(new_table)
 
             copied_sheets.append(sheet_name)
 
