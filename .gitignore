@@ -1,0 +1,8 @@
+/output/
+/config.yaml
+/main.spec
+/build/
+/.idea
+/dist
+/config.json
+/circle_members.json
