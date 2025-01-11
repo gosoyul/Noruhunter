@@ -1,6 +1,8 @@
 import json
 import os
 
+CONFIG_FILE_NAME = "config.json"
+CONFIG_PATH = os.path.join(os.getcwd(), CONFIG_FILE_NAME)
 
 class ConfigKeys:
     """Config 파일의 키 값을 관리하는 클래스"""
@@ -30,9 +32,8 @@ class ConfigManager:
 
     def _load_config(self):
         """설정 파일을 로드하는 메서드."""
-        config_file = "config.json"  # 기본 config 파일
-        if os.path.exists(config_file):
-            with open(config_file, 'r', encoding='utf-8') as f:
+        if os.path.exists(CONFIG_PATH):
+            with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
                 self._config = json.load(f)
         else:
             print("설정 파일을 찾을 수 없습니다. 기본 설정을 사용합니다.")
@@ -63,7 +64,7 @@ class ConfigManager:
 
     def _save_config(self):
         """설정을 파일에 저장하는 메서드."""
-        with open("config.json", 'w', encoding='utf-8') as f:
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
             json.dump(self._config, f, ensure_ascii=False, indent=4)
 
     def __repr__(self):

@@ -1,5 +1,9 @@
 import json
+import os
 from datetime import datetime
+
+CIRCLE_MEMBERS_FILENAME = "circle_members.json"
+CIRCLE_MEMBERS_PATH = os.path.join(os.getcwd(), CIRCLE_MEMBERS_FILENAME)
 
 
 class CircleMember:
@@ -56,10 +60,9 @@ class CircleMemberManager:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, filename="circle_members.json"):
+    def __init__(self):
         if not self._initialized:
             self._initialized = True
-            self.filename = filename
             self.members = []
             self.load_from_json()
 
@@ -82,17 +85,17 @@ class CircleMemberManager:
 
     def save_to_json(self):
         """JSON 파일로 저장"""
-        with open(self.filename, 'w', encoding='utf-8') as f:
+        with open(CIRCLE_MEMBERS_PATH, 'w', encoding='utf-8') as f:
             json.dump([member.to_dict() for member in self.members], f, ensure_ascii=False, indent=4)
 
     def load_from_json(self):
         """JSON 파일에서 데이터 로드"""
         try:
-            with open(self.filename, 'r', encoding='utf-8') as f:
+            with open(CIRCLE_MEMBERS_PATH, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 self.members = [CircleMember.from_dict(member) for member in data]
         except FileNotFoundError:
-            print(f"{self.filename} 파일이 존재하지 않습니다.")
+            print(f"{CIRCLE_MEMBERS_PATH} 파일이 존재하지 않습니다.")
             self.members = []
 
     def get_by_nickname(self, nickname, attribute=None):
