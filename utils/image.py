@@ -4,8 +4,8 @@ import numpy as np
 
 def binarize_image(image):
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    _, binary_image = cv2.threshold(gray_image, 175, 255, cv2.THRESH_BINARY)
-    return binary_image
+    # _, binary_image = cv2.threshold(gray_image, 175, 255, cv2.THRESH_BINARY)
+    return gray_image
 
 
 def compare_images(img1, img2):
