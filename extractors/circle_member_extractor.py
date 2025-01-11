@@ -192,7 +192,7 @@ class CircleMemberExtractor(Extractor):
             cell.fill = PatternFill(start_color="FFDFDF", end_color="FFDFDF", fill_type="solid")  # 배경색
 
     def get_dynamic_ratio(self, hwnd=None):
-        hwnd = hwnd if hwnd else window.find_window(self.config.get(ConfigKeys.WINDOW_TITLE))
+        hwnd = hwnd if hwnd else window.find_window(ConfigManager().get(ConfigKeys.WINDOW_TITLE))
         _, _, client_width, client_height, _, _ = window.get_client_area(hwnd=hwnd)
 
         # 윈도우 해상도를 기준으로 비율 계산
@@ -206,12 +206,13 @@ class CircleMemberExtractor(Extractor):
             left_ratio = 1 / 16
             top_ratio = 0.087  # 상단 비율
 
+        right_ratio = left_ratio * 1.3
         bottom_ratio = top_ratio * 0.7
         profile_ratio = top_ratio * 0.77
 
         print(f"🔍 감지된 화면 비율: {aspect_ratio:.2f}")
 
-        return aspect_ratio, left_ratio, top_ratio, bottom_ratio, profile_ratio
+        return aspect_ratio, left_ratio, right_ratio, top_ratio, bottom_ratio, profile_ratio
 
     def _on_before_export(self, hwnd=None):
         pass

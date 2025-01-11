@@ -3,6 +3,19 @@ import ctypes
 import numpy as np
 from PIL import ImageGrab
 
+# 아이콘 상수
+MB_ICONERROR = 0x10         # ❌ 오류 아이콘
+MB_ICONWARNING = 0x30       # ⚠ 경고 아이콘
+MB_ICONINFORMATION = 0x40   # ℹ 정보 아이콘
+MB_ICONQUESTION = 0x20      # ❓ 질문 아이콘
+
+# 버튼 상수
+MB_OK = 0x00                # [확인] 버튼
+MB_OKCANCEL = 0x01          # [확인] [취소] 버튼
+MB_YESNO = 0x04             # [예] [아니오] 버튼
+MB_YESNOCANCEL = 0x03       # [예] [아니오] [취소] 버튼
+MB_RETRYCANCEL = 0x05       # [다시 시도] [취소] 버튼
+MB_ABORTRETRYIGNORE = 0x02  # [중지] [다시 시도] [무시] 버튼
 
 def find_window(title):
     """윈도우 핸들 찾기"""
@@ -66,9 +79,9 @@ def get_client_area(hwnd=None, window_title=None):
     return screen_x, screen_y, client_width, client_height, center_x, center_y
 
 
-def show_message(title, message, with_cancel=False):
+def show_message(title, message, with_cancel=False, icon=MB_ICONINFORMATION):
     """메시지박스를 띄우는 함수"""
-    return ctypes.windll.user32.MessageBoxW(0, message, title, 0x41 if with_cancel else 0x40)  # 0x40: 아이콘, 0x1: OK 버튼
+    return ctypes.windll.user32.MessageBoxW(0, message, title, icon if with_cancel else 0x40)  # 0x40: 아이콘, 0x1: OK 버튼
 
 
 def screenshot(rect_ratio, hwnd=None, window_title=None):
@@ -77,7 +90,7 @@ def screenshot(rect_ratio, hwnd=None, window_title=None):
         hwnd = find_window(window_title)
 
     client_x, client_y, client_width, client_height, _, _ = get_client_area(hwnd)
-    _, left_ratio, top_ratio, bottom_ratio, _ = rect_ratio
+    _, left_ratio, right_ratio, top_ratio, bottom_ratio, _ = rect_ratio
 
     left = client_x + int(client_width * left_ratio)
     top = client_y + int(client_width * top_ratio)
