@@ -104,7 +104,8 @@ class CircleMemberExtractor(Extractor):
         for i in range(0, max_size, header_size):
             # 직위
             if not extracted_text[i + 1] in ["서클장", "서클원", "부서클장"]:
-                extracted_text[i] += extracted_text[i + 1]
+                if CircleMemberManager().get_by_nickname(extracted_text[i]) is None:
+                    extracted_text[i] += extracted_text[i + 1]
                 del extracted_text[i + 1]
 
             # 주간 공헌도
