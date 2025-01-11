@@ -10,7 +10,7 @@ class DustFrontlineExtractor(Extractor):
         pass
 
     def extract(self):
-        window.show_message("추출", "다음 이벤트 때 개발 예정")
+        window.show_message("추출", "다음 이벤트 때 개발 예정", flag=window.MB_ICONWARNING)
 
     def before_export(self, hwnd=None):
         pass

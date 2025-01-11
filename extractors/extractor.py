@@ -8,7 +8,6 @@ from typing import Callable
 from config import ConfigManager, ConfigKeys
 from excel import Excel, ExcelColumn
 from utils import clova_ocr, window, image, mouse
-from utils.window import show_message, MB_ICONERROR
 
 # 로깅 설정
 logging.basicConfig(
@@ -63,7 +62,7 @@ class Extractor(ABC):
                 return
 
             prefix = name + "을 " if name else ""
-            result = window.show_message("추출", f"{prefix}진행하시려면 [확인]을 눌러주세요.", with_cancel=True)
+            result = window.show_message("추출", f"{prefix}진행하시려면 [확인]을 눌러주세요.", window.MB_OKCANCEL)
             if result == 2:
                 return
 
@@ -161,11 +160,11 @@ class Extractor(ABC):
             # image_path = os.path.join(directory, f"{today}.jpg")
             # image.save_image(image_path, cropped_image)
 
-            if window.show_message("추출", "추출이 완료되었습니다. 엑셀파일을 실행하시겠습니까?", True):
+            if window.show_message("추출", "추출이 완료되었습니다. 엑셀파일을 실행하시겠습니까?", flag=window.MB_OKCANCEL):
                 os.startfile(excel_path)
         except Exception as e:
             logging.error("추출 중 에러 발생", exc_info=True)  # 로그 파일에 오류 기록
-            show_message("에러", f"목록 추출 실패: {e}", icon=MB_ICONERROR)
+            window.show_message("에러", f"목록 추출 실패: {e}", flag=window.MB_ICONERROR)
 
     def _fix_extracted_text(self, extracted_text):
         return extracted_text

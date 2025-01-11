@@ -79,9 +79,9 @@ def get_client_area(hwnd=None, window_title=None):
     return screen_x, screen_y, client_width, client_height, center_x, center_y
 
 
-def show_message(title, message, with_cancel=False, icon=MB_ICONINFORMATION):
+def show_message(title, message, flag=MB_ICONINFORMATION):
     """메시지박스를 띄우는 함수"""
-    return ctypes.windll.user32.MessageBoxW(0, message, title, icon if with_cancel else 0x40)  # 0x40: 아이콘, 0x1: OK 버튼
+    return ctypes.windll.user32.MessageBoxW(0, message, title, flag)  # 0x40: 아이콘, 0x1: OK 버튼
 
 
 def screenshot(rect_ratio, hwnd=None, window_title=None):
