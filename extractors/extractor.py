@@ -19,9 +19,12 @@ logging.basicConfig(
 
 
 class Extractor(ABC):
-    def __init__(self, ocr_headers: list[tuple[str, str]], excel_columns: list[ExcelColumn], parent_window=None):
+    def __init__(self, ocr_headers: list[tuple[str, str]], excel_columns: list[ExcelColumn], name=None,
+                 folder_name="output"):
         self.ocr_headers = ocr_headers
         self.excel_columns = excel_columns
+        self.folder_name = folder_name
+        self.name = name
 
     @abstractmethod
     def get_dynamic_ratio(self, hwnd=None):
@@ -43,15 +46,14 @@ class Extractor(ABC):
     def _on_after_extract(self, extracted_text):
         pass
 
-    @staticmethod
-    def create_output_directory():
+    def create_output_directory(self):
         """결과물 디렉터리 생성"""
-        directory_path = os.path.join(os.getcwd(), "output")
+        directory_path = os.path.join(os.getcwd(), self.folder_name)
         if not os.path.exists(directory_path):
             os.makedirs(directory_path)
         return directory_path
 
-    def extract(self, parent=None, name=None):
+    def extract(self, parent=None, additional_scroll_repeat=0):
         try:
             config = ConfigManager()
             api_url = config.get([ConfigKeys.CLOVA_API, ConfigKeys.CLOVA_API_URL])
@@ -61,14 +63,14 @@ class Extractor(ABC):
                 window.show_message("알림", "CLOVA OCR API 설정을 완료하신 뒤 사용하실 수 있습니다.")
                 return
 
-            prefix = name + "을 " if name else ""
+            prefix = self.name + "을 " if self.name else ""
             result = window.show_message("추출", f"{prefix}진행하시려면 [확인]을 눌러주세요.", window.MB_OKCANCEL)
             if result == 2:
                 return
 
             window_title = config.get(ConfigKeys.WINDOW_TITLE)
             max_scroll = config.get(ConfigKeys.MAX_SCROLLS)
-            scroll_repeat = config.get(ConfigKeys.SCROLL_REPEAT)
+            scroll_repeat = config.get(ConfigKeys.SCROLL_REPEAT) + additional_scroll_repeat
 
             hwnd = window.find_window(window_title)
             window.activate_window(hwnd)
@@ -156,11 +158,11 @@ class Extractor(ABC):
                          columns=self.excel_columns,
                          data=data)
 
-            # 이미지 저장
+            # # 이미지 저장
             # image_path = os.path.join(directory, f"{today}.jpg")
             # image.save_image(image_path, cropped_image)
 
-            if window.show_message("추출", "추출이 완료되었습니다. 엑셀파일을 실행하시겠습니까?", flag=window.MB_OKCANCEL):
+            if window.show_message("추출", "추출이 완료되었습니다. 엑셀파일을 실행하시겠습니까?", flag=window.MB_OKCANCEL) == 1:
                 os.startfile(excel_path)
         except Exception as e:
             logging.error("추출 중 에러 발생", exc_info=True)  # 로그 파일에 오류 기록
@@ -198,10 +200,13 @@ class Extractor(ABC):
             row = {}
             for j in range(len(self.ocr_headers)):
                 value = extracted_text[i + j]
-                if value.isdecimal():
+                if isinstance(value, str) and value.isdecimal():
                     value = int(value)
 
                 row[self.ocr_headers[j][0]] = value
             result.append(row)
 
         return result
+
+    def extract_numbers(self, input_string):
+        return ''.join(char for char in input_string if char.isdigit())

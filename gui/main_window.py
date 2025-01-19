@@ -51,12 +51,12 @@ class MainWindow(QMainWindow):
 
         # 서클원 추출 액션 추가
         circle_action = QAction("서클원 추출", self)
-        circle_action.triggered.connect(lambda: circle_member_extractor.extract(self, "서클원 추출"))
+        circle_action.triggered.connect(lambda: circle_member_extractor.extract(self))
         extract_menu.addAction(circle_action)
 
         # 흙먼지전선 추출 액션 추가
         dust_action = QAction("흙먼지전선 추출", self)
-        dust_action.triggered.connect(dust_frontline_extractor.extract)
+        dust_action.triggered.connect(lambda: dust_frontline_extractor.extract(self))
         extract_menu.addAction(dust_action)
 
         # "설정" 메뉴 항목을 바로 추가

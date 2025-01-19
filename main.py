@@ -6,6 +6,7 @@ from circle_member import CircleMemberManager
 from config import ConfigManager
 from gui import MainWindow
 
+
 if __name__ == "__main__":
     # 사용자 설정 로드
     config = ConfigManager()

@@ -94,7 +94,7 @@ def screenshot(rect_ratio, hwnd=None, window_title=None):
 
     left = client_x + int(client_width * left_ratio)
     top = client_y + int(client_width * top_ratio)
-    right = client_x + client_width - int(client_width * left_ratio * 2)
+    right = client_x + client_width - int(client_width * right_ratio * 2)
     bottom = client_y + client_height - int(client_width * bottom_ratio)
 
     print(f"📸 Left: {left}, Top: {top}, Right: {right}, Bottom: {bottom}")

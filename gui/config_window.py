@@ -1,7 +1,9 @@
-from PyQt5.QtWidgets import QVBoxLayout, QWidget, QLineEdit, QFormLayout, QLabel, QSpinBox, QMainWindow
+from PyQt5.QtCore import QDate
+from PyQt5.QtWidgets import QVBoxLayout, QWidget, QLineEdit, QFormLayout, QLabel, QSpinBox, QMainWindow, QDateEdit
 
-from config import ConfigKeys, ConfigManager
+from config import ConfigKeys, ConfigManager, DEFAULT_CONFIG
 
+DATE_FORMAT = "yyyy-MM-dd"
 
 class ConfigWindow(QMainWindow):
     def __init__(self):
@@ -46,6 +48,29 @@ class ConfigWindow(QMainWindow):
         self.contrib_limit_input.valueChanged.connect(self.on_contrib_limit_changed)
         form_layout.addRow(self.contrib_limit_label, self.contrib_limit_input)
 
+        # 흙먼지전선 시작일
+        self.dust_start_date_label = QLabel("흙먼지전선 시작일")
+        self.dust_start_date_input = QDateEdit()
+
+        dust_start_date_string = self.config.get(ConfigKeys.DUST_START_DATE)
+        default_dust_start_date = QDate.fromString(DEFAULT_CONFIG.get(ConfigKeys.DUST_START_DATE), DATE_FORMAT)
+        self.dust_start_date_input.setMinimumDate(default_dust_start_date)
+
+        dust_start_date = QDate.fromString(dust_start_date_string, DATE_FORMAT) if dust_start_date_string else default_dust_start_date
+        self.dust_start_date_input.setDate(dust_start_date)
+
+        self.dust_start_date_input.dateChanged.connect(self.on_dust_start_date_changed)
+        form_layout.addRow(self.dust_start_date_label, self.dust_start_date_input)
+
+        # 흙먼지전선 부족 점수 제한
+        self.dust_point_limit_label = QLabel("흙먼지 일일 필요 점수")
+        self.dust_point_limit_input = QSpinBox()
+        self.dust_point_limit_input.setMaximum(10000)
+        self.dust_point_limit_input.setSingleStep(100)
+        self.dust_point_limit_input.setValue(self.config.get(ConfigKeys.DUST_POINT_LIMIT))
+        self.dust_point_limit_input.valueChanged.connect(self.on_dust_point_limit_changed)
+        form_layout.addRow(self.dust_point_limit_label, self.dust_point_limit_input)
+
         # 클로바 API 입력 (가로로 길게 고정 제거)
         clova_layout = QVBoxLayout()
         clova_label = QLabel("클로바 API")
@@ -68,7 +93,8 @@ class ConfigWindow(QMainWindow):
         container.setLayout(layout)
         self.setCentralWidget(container)
 
-    # Slot methods for UI updates and saving
+        # Slot methods for UI updates and saving
+
     def on_window_title_changed(self):
         self.config.set(ConfigKeys.WINDOW_TITLE, self.window_title_input.text())
 
@@ -80,6 +106,12 @@ class ConfigWindow(QMainWindow):
 
     def on_contrib_limit_changed(self):
         self.config.set(ConfigKeys.CONTRIB_LIMIT, self.contrib_limit_input.value())
+
+    def on_dust_start_date_changed(self):
+        self.config.set(ConfigKeys.DUST_START_DATE, self.dust_start_date_input.date().toString(DATE_FORMAT))
+
+    def on_dust_point_limit_changed(self):
+        self.config.set(ConfigKeys.DUST_POINT_LIMIT, self.dust_point_limit_input.value())
 
     def on_x_ocr_secret_changed(self):
         self.config.set([ConfigKeys.CLOVA_API, ConfigKeys.CLOVA_X_OCR_SECRET], self.x_ocr_secret_input.text())

@@ -92,7 +92,7 @@ class CircleMemberExtractor(Extractor):
             )
         ]
 
-        super().__init__(ocr_headers=ocr_headers, excel_columns=excel_columns)
+        super().__init__(name="서클원 추출", ocr_headers=ocr_headers, excel_columns=excel_columns)
 
     def _fix_extracted_text(self, extracted_text):
         is_fix_needed = len(extracted_text) % len(self.ocr_headers)
@@ -189,7 +189,8 @@ class CircleMemberExtractor(Extractor):
         config = ConfigManager()
         # contrib_idx = next(
         #     (idx for idx, column in enumerate(self.excel_columns) if column.key == "missing_weekly_contrib"), None)
-        if row_data["missing_weekly_contrib"] is not None and row_data["missing_weekly_contrib"] >= config.get("contrib_limit"):
+        if row_data["missing_weekly_contrib"] is not None and row_data["missing_weekly_contrib"] >= config.get(
+                ConfigKeys.CONTRIB_LIMIT):
             cell.fill = PatternFill(start_color="FFDFDF", end_color="FFDFDF", fill_type="solid")  # 배경색
 
     def get_dynamic_ratio(self, hwnd=None):
@@ -202,13 +203,15 @@ class CircleMemberExtractor(Extractor):
         # 가로 비율 (일반 해상도 vs 울트라와이드)
         if aspect_ratio >= 21 / 9:  # 울트라와이드 (21:9 이상)
             left_ratio = 1 / 21.5
+            right_ratio = left_ratio * 1.3
             top_ratio = 0.061  # 상단 비율
+            bottom_ratio = top_ratio * 0.76
         else:  # 일반 해상도 (16:9, 16:10)
             left_ratio = 1 / 16
-            top_ratio = 0.087  # 상단 비율
+            right_ratio = left_ratio * 1
+            top_ratio = 0.083  # 상단 비율
+            bottom_ratio = top_ratio * 0.75
 
-        right_ratio = left_ratio * 1.3
-        bottom_ratio = top_ratio * 0.7
         profile_ratio = top_ratio * 0.77
 
         print(f"🔍 감지된 화면 비율: {aspect_ratio:.2f}")

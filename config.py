@@ -1,8 +1,10 @@
+import copy
 import json
 import os
 
 CONFIG_FILE_NAME = "config.json"
 CONFIG_PATH = os.path.join(os.getcwd(), CONFIG_FILE_NAME)
+
 
 class ConfigKeys:
     """Config 파일의 키 값을 관리하는 클래스"""
@@ -10,9 +12,25 @@ class ConfigKeys:
     MAX_SCROLLS = "max_scrolls"
     SCROLL_REPEAT = "scroll_repeat"
     CONTRIB_LIMIT = "contrib_limit"
+    DUST_POINT_LIMIT = "dust_point_limit"
+    DUST_START_DATE = "dust_start_date"
     CLOVA_API = "clova_api"
     CLOVA_X_OCR_SECRET = "x_ocr_secret"
     CLOVA_API_URL = "api_url"
+
+
+DEFAULT_CONFIG = {
+    ConfigKeys.WINDOW_TITLE: "EXILIUM",
+    ConfigKeys.MAX_SCROLLS: 20,
+    ConfigKeys.SCROLL_REPEAT: 25,
+    ConfigKeys.CONTRIB_LIMIT: 270,
+    ConfigKeys.DUST_POINT_LIMIT: 1600,
+    ConfigKeys.DUST_START_DATE: "2025-01-01",
+    ConfigKeys.CLOVA_API: {
+        ConfigKeys.CLOVA_X_OCR_SECRET: "",
+        ConfigKeys.CLOVA_API_URL: ""
+    },
+}
 
 
 class ConfigManager:
@@ -34,10 +52,10 @@ class ConfigManager:
         """설정 파일을 로드하는 메서드."""
         if os.path.exists(CONFIG_PATH):
             with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
-                self._config = json.load(f)
+                self._config = self._init_default_config(json.load(f))
         else:
             print("설정 파일을 찾을 수 없습니다. 기본 설정을 사용합니다.")
-            self._config = self._get_default_config()
+            self._config = self._init_default_config()
             self._save_config()
 
     def get(self, keys, default=None):
@@ -72,15 +90,9 @@ class ConfigManager:
         return json.dumps(self._config, indent=4, ensure_ascii=False)
 
     @staticmethod
-    def _get_default_config():
-        default_config = {
-            ConfigKeys.WINDOW_TITLE: "EXILIUM",
-            ConfigKeys.MAX_SCROLLS: 20,
-            ConfigKeys.SCROLL_REPEAT: 25,
-            ConfigKeys.CONTRIB_LIMIT: 270,
-            ConfigKeys.CLOVA_API: {
-                ConfigKeys.CLOVA_X_OCR_SECRET: "",
-                ConfigKeys.CLOVA_API_URL: ""
-            },
-        }
+    def _init_default_config(config):
+
+        default_config = copy.deepcopy(DEFAULT_CONFIG)
+        default_config.update(config)
+
         return default_config
