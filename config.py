@@ -90,9 +90,10 @@ class ConfigManager:
         return json.dumps(self._config, indent=4, ensure_ascii=False)
 
     @staticmethod
-    def _init_default_config(config):
+    def _init_default_config(config=None):
 
         default_config = copy.deepcopy(DEFAULT_CONFIG)
-        default_config.update(config)
+        if config is not None:
+            default_config.update(config)
 
         return default_config
